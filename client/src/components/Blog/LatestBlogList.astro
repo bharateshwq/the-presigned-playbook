@@ -1,0 +1,27 @@
+---
+import { Image } from "@unpic/astro";
+import SectionTitle from "../SectionTitle.astro";
+import BlogList from "./BlogList.astro";
+import type { BlogCardList } from "./types";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+const allPosts = await getCollection("blog");
+const posts: BlogCardList[] = allPosts.map((post: CollectionEntry<"blog">) => ({
+  link: post.id,
+  title: post.data.title,
+  description: post.data.description,
+  tags: post.data.tags,
+  image: { ...post.data.image, loading: "lazy" },
+}));
+---
+
+<section>
+  <SectionTitle
+    label="Latest Posts"
+    class="flex justify-between items-baseline"
+  >
+    <a href="/blogs#all-blogs" class="link link-hover">Read All Posts</a>
+  </SectionTitle>
+  <BlogList  posts={posts} />
+</section>

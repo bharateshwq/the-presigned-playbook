@@ -1,0 +1,38 @@
+---
+const NAV_CONTENTS = [
+  { label: "Blogs", link: "/blogs" },
+  { label: "Tags", link: "/tags" },
+];
+
+const { pathname } = Astro.url;
+---
+
+<nav class="flex gap-6 md:gap-8 overflow-x-auto">
+  {
+    NAV_CONTENTS.map((item) => {
+      // 1. Determine if this link is active
+      // Exact match for home ('/'), partial match for others ('/blog' matches '/blog/post-1')
+      const isActive =
+        item.link === "/"
+          ? pathname === "/"
+          : pathname.startsWith(item.link);
+
+      return (
+        <a
+          href={item.link}
+          class:list={[
+            // Base styles
+            "text-sm font-bold uppercase tracking-widest transition-all decoration-2 underline-offset-8 whitespace-nowrap",
+            // Conditional styles
+            isActive
+              ? "text-primary underline" // Active state
+              : "text-base-content/60 hover:text-primary hover:underline", // Inactive state
+          ]}
+          aria-current={isActive ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      );
+    })
+  }
+</nav>

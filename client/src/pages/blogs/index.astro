@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import PageHeading from "../../components/PageHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import type { BlogCard, BlogCardList } from "../../components/Blog/types";
+import BlogList from "../../components/Blog/BlogList.astro";
+import type { CollectionEntry } from "astro:content";
+
+const allPosts = await getCollection("blog");
+const posts: BlogCardList[] = allPosts.map((post: CollectionEntry<"blog">) => ({
+  link: post.id,
+  title: post.data.title,
+  description: post.data.description,
+  tags: post.data.tags,
+  image: { ...post.data.image, loading: "lazy" },
+}));
+---
+
+<BaseLayout>
+  <PageHeading
+    redirectId="all-blogs"
+    text="Blogs"
+    subtext="Explore all blogs"
+  />
+  <BlogList posts={posts} />
+</BaseLayout>

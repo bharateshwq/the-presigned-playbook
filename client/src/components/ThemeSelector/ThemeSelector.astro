@@ -1,0 +1,91 @@
+---
+import { Computer, MoonStar, SunMedium } from "@lucide/astro";
+import { STORAGE_KEY, type DaisyTheme } from "./utils";
+
+const theme: DaisyTheme = (Astro.cookies.get(STORAGE_KEY)?.value ??
+  "system") as DaisyTheme;
+---
+
+<fieldset
+  id="theme-selector"
+  class="relative flex items-center gap-1 p-1 rounded-full w-fit bg-base-200/60 border border-base-content/5"
+>
+  <legend class="sr-only">Toggle theme</legend>
+  
+  {/* --- System Option --- */}
+  <label class="cursor-pointer relative">
+    <input
+      type="radio"
+      id="default"
+      value="system"
+      checked={theme === "system"}
+      name="theme-selection"
+      class="peer sr-only theme-controller"
+    />
+    <div class="p-1.5 rounded-full text-base-content/70 transition-all duration-300 ease-out
+                hover:text-base-content hover:bg-base-content/5
+                peer-checked:bg-base-100 peer-checked:text-primary peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-base-content/5
+                peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+      <Computer size="16" />
+    </div>
+    <span class="sr-only">System</span>
+  </label>
+
+  {/* --- Dark Option --- */}
+  <label class="cursor-pointer relative">
+    <input
+      type="radio"
+      id="dark"
+      value="business"
+      checked={theme === "business"}
+      name="theme-selection"
+      class="peer sr-only theme-controller"
+    />
+    <div class="p-1.5 rounded-full text-base-content/70 transition-all duration-300 ease-out
+                hover:text-base-content hover:bg-base-content/5
+                peer-checked:bg-base-100 peer-checked:text-primary peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-base-content/5
+                peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+      <MoonStar size="16" />
+    </div>
+    <span class="sr-only">Dark mode</span>
+  </label>
+
+  {/* --- Light Option --- */}
+  <label class="cursor-pointer relative">
+    <input
+      type="radio"
+      id="light"
+      value="retro"
+      checked={theme === "retro"}
+      name="theme-selection"
+      class="peer sr-only theme-controller"
+    />
+    <div class="p-1.5 rounded-full text-base-content/70 transition-all duration-300 ease-out
+                hover:text-base-content hover:bg-base-content/5
+                peer-checked:bg-base-100 peer-checked:text-primary peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-base-content/5
+                peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+      <SunMedium size="16" />
+    </div>
+    <span class="sr-only">Light mode</span>
+  </label>
+</fieldset>
+
+<script>
+  import { saveTheme, type DaisyTheme } from "./utils";
+
+  const fieldset = document.getElementById("theme-selector");
+
+  if (fieldset) {
+    fieldset.addEventListener("change", (event: Event) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement &&
+        target.type === "radio" &&
+        target.name === "theme-selection"
+      ) {
+        const val = target.value as DaisyTheme;
+        saveTheme(val);
+      }
+    });
+  }
+</script>

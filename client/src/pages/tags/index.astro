@@ -1,0 +1,50 @@
+---
+import { getCollection } from "astro:content";
+import PageHeading from "../../components/PageHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import type {  BlogCardList } from "../../components/Blog/types";
+
+const allPosts = await getCollection("blog");
+const tagsMap = new Map<string, BlogCardList[]>();
+
+allPosts.forEach(({ data: post }) => {
+  post.tags.forEach((tag) => {
+    if (!tagsMap.has(tag)) {
+      tagsMap.set(tag, []);
+    }
+    tagsMap.get(tag)?.push(post);
+  });
+});
+---
+
+<BaseLayout>
+  <PageHeading redirectId="tags-title"  text="Tags" subtext="Explore all blogs based on tags" />
+  <ul class="divide-y bg-base-300">
+    {
+      [...tagsMap.entries()].map(([tag, posts], index) => (
+        <li class="group flex items-center justify-between h-24 px-4   transition-colors hover:bg-accent">
+          <a
+            href={`/tags/${tag}#tag-title`}
+            class="flex items-center gap-4 w-full h-full"
+          >
+            {/* Index */}
+            <span class="text-3xl group-hover:text-5xl font-medium group-hover:font-blod text-muted-foreground opacity-40 transition-all  group-hover:text-accent-content">
+              {index}
+            </span>
+
+            {/* Tag + count */}
+            <div class="flex items-center gap-2 relative ">
+              <span class="font-medium text-base-content group-hover:underline">
+                {tag}
+              </span>
+              <span class="text-sm text-base-content">({posts.length})</span>
+              <span class="text-9xl  opacity-0 group-hover:opacity-20 absolute text-center text-accent-content whitespace-nowrap transition-all">
+                {tag}
+              </span>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

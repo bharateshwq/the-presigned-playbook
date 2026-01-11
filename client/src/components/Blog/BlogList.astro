@@ -1,0 +1,33 @@
+---
+import { Image } from "astro:assets";
+import BlogCard from "./BlogCard.astro";
+import type { BlogCardList } from "./types";
+
+type Props = { posts: BlogCardList[];  };
+const { posts,  } = Astro.props;
+---
+
+<ol class="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-10">
+  {
+    posts.map((post) => (
+      <li class="w-fit mx-auto">
+        <BlogCard
+          
+          link={post.link}
+          title={post.title}
+          description={post.description}
+          tags={post.tags}
+        >
+          <Image
+            width={600}
+            height={400}
+            src={post.image.url}
+            loading={post.image.loading ?? "lazy"}
+            class="w-full h-full object-cover"
+            alt={post.image.alt}
+          />
+        </BlogCard>
+      </li>
+    ))
+  }
+</ol>

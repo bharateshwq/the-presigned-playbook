@@ -1,0 +1,27 @@
+---
+interface Props {
+  text: string;
+  subtext?: string;
+  redirectId?: string;
+  contextLabel?: string;
+}
+const { text, subtext, redirectId, contextLabel } = Astro.props;
+---
+
+<div class="flex flex-col justify-center md:mt-24 mt-12 mb-12">
+  {
+    contextLabel && (
+      <span class="bg-accent/50 text-sm mx-1 p-0.5 font-mono my-0  text-accent-content w-fit">
+        {contextLabel}
+      </span>
+    )
+  }
+  <h1
+    id={redirectId}
+    class="text-3xl md:text-5xl capitalize font-bold text-base-content tracking-tight leading-tight scroll-mt-12 md:scroll-mt-24"
+  >
+    {text}
+  </h1>
+
+  {subtext && <p class="mt-1 text-md text-base-content/60">{subtext}</p>}
+</div>

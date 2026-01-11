@@ -1,0 +1,26 @@
+---
+import Header from "../components/Header.astro";
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Bharatesh's blog</title>
+  </head>
+  <body >
+    <main class="py-12 px-4 md:px-12 max-w-7xl mx-auto">
+      <Header />
+      <div class="min-h-screen">
+        <slot />
+      </div>
+      <footer class="h-24 border-base-content/10 border-t mt-16 py-12 px-4">
+        <!-- <ThemeSelector /> -->
+      </footer>
+    </main>
+  </body>
+</html>

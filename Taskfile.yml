@@ -1,0 +1,147 @@
+version: "3"
+
+vars:
+  BACKEND_DIR: server
+  FRONTEND_DIR: client
+  ENV_FILE: .env.local
+  JAVA_REQUIRED: "21"
+  MAVEN_REQUIRED: "3.9.9"
+  NODE_REQUIRED: "24"
+
+tasks:
+  # =========================
+  # Default entrypoint
+  # =========================
+  default:
+    desc: Setup environment and run backend + frontend
+    cmds:
+      - task: setup
+      - task: run
+
+  # =========================
+  # Setup phase (SEQUENTIAL)
+  # =========================
+  setup:
+    desc: Check dependencies and load environment
+    cmds:
+      - task: check:deps
+      - task: env:load
+
+  # =========================
+  # Dependency checks
+  # =========================
+  check:deps:
+    desc: Check Java, Maven, Node versions
+    cmds:
+      - |
+        set -e
+
+        echo "🔍 Checking Java..."
+        java_version=$(java -version 2>&1 | head -n 1 | sed -E 's/.*version "([0-9]+).*/\1/')
+        if [ "$java_version" != "{{.JAVA_REQUIRED}}" ]; then
+          echo "❌ Java {{.JAVA_REQUIRED}} required (found $java_version)"
+          exit 1
+        fi
+
+        echo "🔍 Checking Maven..."
+        required="{{.MAVEN_REQUIRED}}"
+        required_mm=$(echo "$required" | cut -d. -f1,2)
+        installed_mm=$(mvn -v | awk '/Apache Maven/ {print $3}' | tr -d '\r\n' | cut -d. -f1,2)
+
+        if [ "$installed_mm" != "$required_mm" ]; then
+          echo "❌ Maven $required_mm.x required (found $(mvn -v | awk '/Apache Maven/ {print $3}'))"
+          exit 1
+        fi
+
+        echo "🔍 Checking Node..."
+        node_major=$(node -v | sed 's/v//' | cut -d. -f1)
+        if [ "$node_major" != "{{.NODE_REQUIRED}}" ]; then
+          echo "❌ Node {{.NODE_REQUIRED}} required (found $node_major)"
+          exit 1
+        fi
+
+        echo "✅ All dependencies OK"
+
+  # =========================
+  # Environment loader
+  # =========================
+  env:load:
+    desc: Create and load local environment file
+    interactive: true
+    cmds:
+      - |
+        set -e
+
+        if [ ! -f "{{.ENV_FILE}}" ]; then
+          echo "📝 Creating {{.ENV_FILE}} (local only)"
+
+          read -p "Supabase JDBC URL: " SPRING_DATASOURCE_URL
+          read -p "Supabase username: " SPRING_DATASOURCE_USERNAME
+          read -s -p "Supabase password: " SPRING_DATASOURCE_PASSWORD
+          echo
+          read -p "AWS access key: " CLOUD_AWS_CREDENTIALS_ACCESS_KEY
+          read -s -p "AWS secret key: " CLOUD_AWS_CREDENTIALS_SECRET_KEY
+          echo
+          read -p "AWS region (eu-north-1): " CLOUD_AWS_REGION_STATIC_REGION
+          CLOUD_AWS_REGION_STATIC_REGION=${CLOUD_AWS_REGION_STATIC_REGION:-eu-north-1}
+          read -p "S3 bucket name: " CLOUD_AWS_BUCKET_NAME
+
+          printf "%s\n" \
+            "SPRING_DATASOURCE_URL=\"$SPRING_DATASOURCE_URL\"" \
+            "SPRING_DATASOURCE_USERNAME=\"$SPRING_DATASOURCE_USERNAME\"" \
+            "SPRING_DATASOURCE_PASSWORD=\"$SPRING_DATASOURCE_PASSWORD\"" \
+            "" \
+            "CLOUD_AWS_CREDENTIALS_ACCESS_KEY=\"$CLOUD_AWS_CREDENTIALS_ACCESS_KEY\"" \
+            "CLOUD_AWS_CREDENTIALS_SECRET_KEY=\"$CLOUD_AWS_CREDENTIALS_SECRET_KEY\"" \
+            "CLOUD_AWS_REGION_STATIC_REGION=\"$CLOUD_AWS_REGION_STATIC_REGION\"" \
+            "CLOUD_AWS_BUCKET_NAME=\"$CLOUD_AWS_BUCKET_NAME\"" \
+            > "{{.ENV_FILE}}"
+
+          chmod 600 "{{.ENV_FILE}}"
+          echo "✅ {{.ENV_FILE}} created"
+        else
+          echo "ℹ️ {{.ENV_FILE}} already exists"
+        fi
+
+        echo "📦 Loading {{.ENV_FILE}}"
+        set -a
+        source "{{.ENV_FILE}}"
+        set +a
+
+  # =========================
+  # Run phase (PARALLEL)
+  # =========================
+  run:
+    desc: Run backend and frontend together
+    parallel: true
+    cmds:
+      - task: run:backend
+      - task: run:frontend
+
+  # =========================
+  # Backend
+  # =========================
+  run:backend:
+    desc: Run Spring Boot backend
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - |
+        set -e
+        set -a
+        source ../{{.ENV_FILE}}
+        set +a
+
+        echo "🚀 Starting Spring Boot backend..."
+        mvn spring-boot:run
+
+  # =========================
+  # Frontend
+  # =========================
+  run:frontend:
+    desc: Run Astro frontend
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - |
+        echo "🚀 Starting Astro frontend..."
+        npm install
+        npm run dev

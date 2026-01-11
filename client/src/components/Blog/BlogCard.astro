@@ -1,0 +1,32 @@
+---
+import { cn } from "../../util/utils";
+import type { BlogCard } from "./types";
+
+type Props = BlogCard;
+
+const { title, description, tags, link } = Astro.props;
+---
+
+<a
+  href={`/blogs/${link}#main-title`}
+  class="card md:w-xl w-full h-xl  bg-neutral text-neutral-content shadow-sm"
+>
+  <figure class="">
+    <slot />
+  </figure>
+  <div class="card-body">
+    <h2 class="card-title">{title}</h2>
+    <p>{description}</p>
+    <div class="card-actions justify-end">
+      {
+        tags.map((tag) => (
+          <span
+            class={cn("badge badge-soft text-base-content bg-base-100 text-sm")}
+          >
+            {tag}
+          </span>
+        ))
+      }
+    </div>
+  </div>
+</a>
